@@ -43,7 +43,7 @@ namespace ChiaRPC.Clients
             {
                 throw new FileNotFoundException($"Could not find certificate key file \"{keyPath}\"");
             }
-
+            
             var certificate = X509Certificate2.CreateFromPemFile(certificatePath, keyPath);
             return certificate;
         }
