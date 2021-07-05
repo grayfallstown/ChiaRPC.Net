@@ -45,7 +45,10 @@ namespace ChiaRPC.Clients
             }
             
             var certificate = X509Certificate2.CreateFromPemFile(certificatePath, keyPath);
-            return certificate;
+
+            return OperatingSystem.IsWindows() 
+                ? new X509Certificate2(certificate.Export(X509ContentType.Pkcs12)) //This is required due to a bug. Might be fixed in dotnet 6.0
+                : certificate;
         }
 
         private static HttpClient CreateClient(X509Certificate2 certificate)
