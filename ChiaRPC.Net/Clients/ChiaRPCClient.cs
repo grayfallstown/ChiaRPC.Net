@@ -69,7 +69,7 @@ namespace ChiaRPC.Clients
             return result.Connections;
         }
 
-        internal async Task<T> PostAsync<T>(Uri requestUri, Dictionary<string, string> parameters = null) where T : ChiaResult
+        protected async Task<T> PostAsyncRaw<T>(Uri requestUri, object parameters = null, bool throwOnError = true) where T : ChiaResult
         {
             using var request = new HttpRequestMessage(HttpMethod.Post, new Uri(ApiUrl, requestUri))
             {
@@ -80,10 +80,18 @@ namespace ChiaRPC.Clients
             response.EnsureSuccessStatusCode();
             var result = await response.Content.ReadFromJsonAsync<T>();
 
+            if (throwOnError && !result.Success)
+            {
+                throw new HttpRequestException("Chia responded with unsuccessful");
+            }
+            //
             return !result.Success
-                ? throw new HttpRequestException("Chia responded with unsuccessful")
+                ? default
                 : result;
         }
+
+        protected Task<T> PostAsync<T>(Uri requestUri, Dictionary<string, string> parameters = null, bool throwOnError = true) where T : ChiaResult
+            => PostAsyncRaw<T>(requestUri, parameters, throwOnError);
 
         protected Task PostAsync(Uri requestUri, Dictionary<string, string> parameters = null)
             => PostAsync<ChiaResult>(requestUri, parameters);

@@ -1,7 +1,5 @@
-﻿using ChiaRPC.Utils;
-using System;
+﻿using System;
 using System.Linq;
-using System.Net.Http.Headers;
 using System.Security.Cryptography;
 
 namespace ChiaRPC.Models
@@ -22,7 +20,7 @@ namespace ChiaRPC.Models
         public HexBytes Sha256()
         {
             byte[] hash = SHA256.HashData(Bytes);
-            string hexHash = HexUtils.ByteArrayToHexString(hash);
+            string hexHash = HexMate.Convert.ToHexString(hash);
             return new HexBytes(hexHash, hash);
         }
 
@@ -33,23 +31,62 @@ namespace ChiaRPC.Models
 
             return new HexBytes(concatHex, concatBytes);
         }
-        public static bool operator ==(HexBytes a, HexBytes b) 
+        public static HexBytes operator +(HexBytes a, byte[] b)
+        {
+            string bs = HexMate.Convert.ToHexString(b);
+            string concatHex = string.Concat(a.Hex, bs);
+            byte[] concatBytes = a.Bytes.Concat(b).ToArray();
+
+            return new HexBytes(concatHex, concatBytes);
+        }
+        public static HexBytes operator +(HexBytes a, string b)
+        {
+            byte[] bb = HexMate.Convert.FromHexString(b);
+            string concatHex = string.Concat(a.Hex, b);
+            byte[] concatBytes = a.Bytes.Concat(bb).ToArray();
+
+            return new HexBytes(concatHex, concatBytes);
+        }
+
+        public static bool operator ==(HexBytes a, HexBytes b)
             => a.Hex.ToUpperInvariant() == b.Hex.ToUpperInvariant();
         public static bool operator !=(HexBytes a, HexBytes b)
             => a.Hex.ToUpperInvariant() != b.Hex.ToUpperInvariant();
 
-        public static HexBytes FromHex(string hex) 
+        public static HexBytes FromHex(string hex)
             => string.IsNullOrWhiteSpace(hex)
                 ? Empty
                 : hex.StartsWith("0x")
-                    ? new HexBytes(hex[2..], HexUtils.HexStringToByteArray(hex[2..]))
-                    : new HexBytes(hex, HexUtils.HexStringToByteArray(hex));
+                    ? new HexBytes(hex[2..], HexMate.Convert.FromHexString(hex.AsSpan()[2..]))
+                    : new HexBytes(hex, HexMate.Convert.FromHexString(hex.AsSpan()));
 
-        public static HexBytes FromBytes(byte[] bytes) 
+        public static bool TryFromHex(string hex, out HexBytes result)
+        {
+            if (string.IsNullOrWhiteSpace(hex))
+            {
+                result = Empty;
+                return true;
+            }
+
+
+            var bytes = new byte[hex.Length / 2].AsSpan();
+            var s = hex.StartsWith("0x") ? hex.AsSpan()[2..] : hex.AsSpan();
+            if (!HexMate.Convert.TryFromHexChars(s, bytes, out int written))
+            {
+                result = Empty;
+                return false;
+            }
+
+            result = new HexBytes(s.ToString(), bytes.Slice(0, written).ToArray());
+            return true;
+        }
+
+
+        public static HexBytes FromBytes(byte[] bytes)
             => bytes == null
                 ? Empty
                 : new HexBytes(
-                    HexUtils.ByteArrayToHexString(bytes),
+                    HexMate.Convert.ToHexString(bytes),
                     bytes);
 
         public override bool Equals(object obj)

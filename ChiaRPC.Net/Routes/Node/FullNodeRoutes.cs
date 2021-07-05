@@ -15,5 +15,11 @@ namespace ChiaRPC.Routes
 
         public static Uri GetRecentSignagePointOrEos()
             => new Uri("get_recent_signage_point_or_eos", UriKind.Relative);
+
+        public static Uri GetCoinRecordByName()
+            => new Uri("get_coin_record_by_name", UriKind.Relative);
+
+        public static Uri GetPuzzleAndSolution()
+            => new Uri("get_puzzle_and_solution", UriKind.Relative);
     }
 }

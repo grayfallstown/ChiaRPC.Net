@@ -3,14 +3,13 @@ using System.Text.Json.Serialization;
 
 namespace ChiaRPC.Models
 {
-    public sealed class Block
+    public sealed class SerializedProgram
     {
-        [JsonPropertyName("header_hash")]
+        [JsonPropertyName("_buf")]
         [JsonConverter(typeof(HexBytesConverter))]
-        public HexBytes HeaderHash { get; init; }
+        public HexBytes Buffer { get; init; }
 
-        [JsonConstructor]
-        public Block()
+        public SerializedProgram()
         {
         }
     }
